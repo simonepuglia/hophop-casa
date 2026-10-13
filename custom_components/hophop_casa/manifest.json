@@ -1,0 +1,14 @@
+{
+  "codeowners": [
+    "@simonepuglia"
+  ],
+  "config_flow": true,
+  "documentation": "https://github.com/simonepuglia/hophop-casa#readme",
+  "domain": "hophop_casa",
+  "integration_type": "service",
+  "iot_class": "cloud_push",
+  "issue_tracker": "https://github.com/simonepuglia/hophop-casa/issues",
+  "name": "HopHop Casa",
+  "requirements": [],
+  "version": "1.0.0"
+}

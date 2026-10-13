@@ -1,0 +1,38 @@
+{
+  "title": "HopHop Casa",
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect your home",
+        "description": "Paste the token for this device from your HopHop Casa account. The connection to HopHop Casa is configured automatically.",
+        "data": {
+          "device_token": "Device token",
+          "local_ha_url": "Local Home Assistant URL"
+        }
+      }
+    },
+    "error": {
+      "invalid_token": "Enter a device token.",
+      "invalid_url": "Enter a valid HTTP(S) local Home Assistant URL, without query parameters or embedded credentials."
+    },
+    "abort": {
+      "already_configured": "This token is already configured."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "Connection settings",
+        "description": "Update your device token or local Home Assistant address. Saving reconnects the tunnel automatically.",
+        "data": {
+          "device_token": "Device token",
+          "local_ha_url": "Local Home Assistant URL"
+        }
+      }
+    },
+    "error": {
+      "invalid_token": "Enter a device token.",
+      "invalid_url": "Enter a valid HTTP(S) local Home Assistant URL, without query parameters or embedded credentials."
+    }
+  }
+}
