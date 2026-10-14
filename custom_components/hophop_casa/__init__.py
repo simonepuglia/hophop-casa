@@ -32,7 +32,11 @@ async def async_unload_entry(hass, entry):
         interrupted = False
         while True:
             try:
-                await asyncio.shield(cleanup)
+                # wait() does not pass caller cancellation to the cleanup task.
+                # Unlike a cancelled shield wrapper on Python 3.14.8, it also
+                # does not log an exception we will explicitly retrieve below.
+                await asyncio.wait({cleanup})
+                cleanup.result()
                 break
             except asyncio.CancelledError:
                 if cleanup.cancelled():

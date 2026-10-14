@@ -46,8 +46,16 @@ class ClientTests(unittest.IsolatedAsyncioTestCase):
     async def asyncTearDown(self):
         await self.client.stop(); await self.broker.close(); await self.local.close()
     async def test_502_then_recovery_and_clean_close_recovery(self):
-        self.reject=2; await self.client.start(); await until(lambda:len(self.connections)==1)
-        await self.connections[0].close();await until(lambda:len(self.connections)==2)
+        self.reject=2; await self.client.start()
+        await until(lambda:len(self.connections)==1 and self.client.state=='connected')
+        first=self.client.ws
+        await self.connections[0].close()
+        # Accepting a socket and sending WELCOME does not mean the client has
+        # received it yet. Observe the replacement client, not just the server.
+        await until(lambda:len(self.connections)==2 and self.client.state=='connected'
+                    and self.client.ws is not first)
+        await self.connections[1].send_json({'type':'PING'})
+        await until(lambda:any(frame.get('type')=='PONG' for frame in self.frames))
         self.assertEqual(self.client.state,'connected'); self.assertGreaterEqual(self.client.reconnects,3)
     async def test_dns_failure_then_recovery(self):
         original=aiohttp.ClientSession.ws_connect;calls=0

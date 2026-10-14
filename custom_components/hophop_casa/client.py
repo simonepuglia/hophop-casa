@@ -98,7 +98,7 @@ class RemoteClient:
                 # instead of aiodns, which can time out in HA/container DNS setups.
                 connector = aiohttp.TCPConnector(
                     resolver=aiohttp.ThreadedResolver(), ttl_dns_cache=30,
-                    limit=40, enable_cleanup_closed=True)
+                    limit=40)
                 timeout = aiohttp.ClientTimeout(total=30, connect=15, sock_read=25)
                 async with aiohttp.ClientSession(connector=connector, timeout=timeout,
                                                 auto_decompress=False) as session:

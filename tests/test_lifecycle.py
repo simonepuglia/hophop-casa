@@ -64,12 +64,22 @@ class LifecycleTests(unittest.IsolatedAsyncioTestCase):
         self.client.stop = AsyncMock(side_effect=fail)
         task = asyncio.create_task(integration.async_unload_entry(self.hass, self.entry))
         await self.entered.wait()
-        with self.assertLogs(integration.__name__, level='WARNING'):
-            task.cancel()
+        loop = asyncio.get_running_loop()
+        previous_handler = loop.get_exception_handler()
+        unexpected_errors = []
+        loop.set_exception_handler(lambda loop, context: unexpected_errors.append(context))
+        try:
+            with self.assertLogs(integration.__name__, level='WARNING'):
+                task.cancel()
+                await asyncio.sleep(0)
+                self.release.set()
+                with self.assertRaisesRegex(RuntimeError, 'cleanup deadline'):
+                    await asyncio.wait_for(task, 1)
             await asyncio.sleep(0)
-            self.release.set()
-            with self.assertRaisesRegex(RuntimeError, 'cleanup deadline'):
-                await asyncio.wait_for(task, 1)
+            await asyncio.sleep(0)
+        finally:
+            loop.set_exception_handler(previous_handler)
+        self.assertEqual(unexpected_errors, [], 'Cleanup failure must be propagated without an unhandled-loop error')
         self.assertIs(self.hass.data['hophop_casa']['entry'], self.client)
 
     async def test_cancelled_cleanup_propagates_and_retains_client(self):
