@@ -23,13 +23,13 @@ Copy `custom_components/hophop_casa` into the HA configuration directory (normal
 
 HACS downloads updates; fully restart HA afterwards to load changed Python files. Existing hophop_casa settings and tokens are retained on later updates. Migrating from remote_ha_client requires removing/re-adding the HA entry; reuse your existing server device/token. Reload the integration through your LOCAL HA address, because reloading the tunnel while accessing HA through it interrupts the connection you are using.
 
-Version 1.0.0 is the first public HACS release. It includes bounded shutdown, recovery from DNS/502/disconnect failures, isolated HTTP/WebSocket workers, and sanitized diagnostics. See [CHANGELOG.md](CHANGELOG.md). Client version numbers are independent of server versions; this client works with server 1.4.0.
+Version 1.0.1 fixes reload cancellation when the reload request passes through this integration’s own tunnel. The first public HACS release was 1.0.0. It includes bounded shutdown, recovery from DNS/502/disconnect failures, isolated HTTP/WebSocket workers, and sanitized diagnostics. See [CHANGELOG.md](CHANGELOG.md). Client version numbers are independent of server versions; this client works with server 1.4.0.
 
 To change your device token or local Home Assistant address, use the integration's Configure menu. The broker address is managed automatically. Existing entries with a previously saved broker address retain it when you update their settings.
 
 ## Troubleshooting
 
-If Offline, check that this device’s subscription is active, the token is correct, and DNS/server connectivity works. If Online but HA cannot open, check the local HA URL and port. Configure lets you update the token and local address. Download diagnostics from the integration menu for state, version, task_running, stop_requested, shutdown_stage and sanitized errors. For additional logging, use:
+If Offline, check that this device’s subscription is active, the token is correct, and DNS/server connectivity works. If Online but HA cannot open, check the local HA URL and port. Configure lets you update the token and local address. Download diagnostics from the **HopHop Casa** integration menu. Confirm `integration_domain` is `hophop_casa` and `version` is `1.0.1`; files from `remote_ha_client` describe the retired integration. Diagnostics also include entry_state, state, task_running, task_cancelled, stop_requested, shutdown_stage and sanitized errors. For additional logging, use:
 
 ```yaml
 action: logger.set_level
@@ -37,7 +37,7 @@ data:
   custom_components.hophop_casa: debug
 ```
 
-If unloading fails, use the full logs and diagnostics; a full HA restart recovers an old hung unload. Never post tokens or private access links in issues.
+A reload over the remote link briefly disconnects that link and can show a network/502 error; reconnect afterwards. Version 1.0.1 allows Home Assistant to finish the reload even if that request disconnects. If unloading was already stuck under an older version, copy the updated files and perform a full HA restart once. If unloading still fails, collect the logs and diagnostics. Never post tokens or private access links in issues.
 
 ## Privacy
 
@@ -45,3 +45,11 @@ HopHop Casa uses encrypted HTTPS and WebSocket connections to provide remote acc
 
 ## License
 The HopHop Casa client integration is licensed under Apache License 2.0. Access to the hosted HopHop Casa service requires a separate subscription and is governed by its Terms of Service.
+
+## Reload investigation
+
+See [RELOAD_INVESTIGATION.md](RELOAD_INVESTIGATION.md) for the reproduced failure, backend isolation audit, update steps and diagnostic commands.
+
+## Retire the previous integration
+
+If Remote HA Client is still configured, use your local HA address to disable/remove its old entry and remove its custom_components/remote_ha_client folder afterwards. Keep the paid device on the website and keep the HopHop Casa entry/token. A legacy entry receiving HTTP 401 is retrying an unauthorized token; it does not diagnose the new integration. Do not run both integrations for the same device token. Each separate installation needs a different device token and active subscription.

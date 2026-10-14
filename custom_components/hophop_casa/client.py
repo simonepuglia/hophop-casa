@@ -38,7 +38,7 @@ class RemoteClient:
             self._stop.clear()
             # Let Home Assistant own the lifetime when called by a config entry.
             self.task = (task_factory(self._run()) if task_factory else
-                         asyncio.create_task(self._run(), name='remote-ha-tunnel'))
+                         asyncio.create_task(self._run(), name='hophop-casa-tunnel'))
 
     async def stop(self):
         """Bound shutdown even when aiohttp or a worker waits during cancellation."""
@@ -46,7 +46,7 @@ class RemoteClient:
         self.state = 'stopping'
         self.shutdown_stage = 'cancel_tunnel'
         task = self.task
-        _LOGGER.info('HopHop Casa 1.0.0: stopping tunnel')
+        _LOGGER.info('HopHop Casa 1.0.1: stopping tunnel')
         if task and not task.done():
             task.cancel()
             # wait_for/gather can themselves wait forever for cancellation to
@@ -58,7 +58,7 @@ class RemoteClient:
                 locations = ', '.join(f'{f.f_code.co_name}:{f.f_lineno}' for f in stack)
                 _LOGGER.warning('HopHop Casa shutdown is slow (%s); closing network session', locations or 'awaiting cleanup')
                 if self.session and not self.session.closed:
-                    closer = asyncio.create_task(self.session.close(), name='remote-ha-close-session')
+                    closer = asyncio.create_task(self.session.close(), name='hophop-casa-close-session')
                     closed, _ = await asyncio.wait({closer}, timeout=1)
                     if not closed:
                         closer.cancel()
@@ -81,7 +81,7 @@ class RemoteClient:
         self.connected_since = None
         self.state = 'stopped'
         self.shutdown_stage = 'complete'
-        _LOGGER.info('HopHop Casa 1.0.0: tunnel stopped')
+        _LOGGER.info('HopHop Casa 1.0.1: tunnel stopped')
 
     @staticmethod
     def _consume_task_result(task):
